@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFP Response Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        
+        .header {
+            background: #0f172a;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid #1e293b;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #f1f5f9;
+        }
+        
+        .header p {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        .industry-badge {
+            display: inline-block;
+            background: #1e293b;
+            color: #6366f1;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+        
+        .usecase-badge {
+            display: inline-block;
+            background: #1e293b;
+            color: #06b6d4;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: #1a1f3a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+        
+        .card label {
+            display: block;
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        
+        textarea {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 12px;
+            color: #e2e8f0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+            min-height: 300px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-generate {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+        
+        .btn-generate:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-export {
+            background: #1e293b;
+            color: #6366f1;
+            border: 1px solid #6366f1;
+        }
+        
+        .btn-export:hover:not(:disabled) {
+            background: #6366f1;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-export:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #1e293b;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #7f1d1d;
+            border: 1px solid #dc2626;
+            color: #fecaca;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .success {
+            background: #064e3b;
+            border: 1px solid #10b981;
+            color: #a7f3d0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .hint {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 40px;
+            border-top: 1px solid #1e293b;
+        }
+        
+        footer a {
+            color: #6366f1;
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RFP Response Generator</h1>
+            <p>Professional Services & Consulting</p>
+            <div>
+                <span class="industry-badge">Professional Services & Consulting</span>
+                <span class="usecase-badge">RFP Response Pre-Filler</span>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2>RFP Section Input</h2>
+                <label for="rfp-input">Paste or type the RFP requirement section:</label>
+                <textarea id="rfp-input" placeholder="Enter RFP section...">Your organization seeks a strategic consulting partner to develop and implement a comprehensive digital transformation strategy. The selected firm should have demonstrated expertise in cloud migration, organizational change management, and enterprise application modernization. We require detailed approaches for risk mitigation, stakeholder engagement, and post-implementation support spanning 18 months.</textarea>
+                <div class="button-group">
+                    <button class="btn-generate" onclick="generateResponse()">Generate Response</button>
+                </div>
+                <div class="hint">Try it → Click Generate to create a professional response</div>
+            </div>
+            
+            <div class="card">
+                <h2>Generated Response</h2>
+                <label for="rfp-output">Professional response (edit as needed):</label>
+                <div id="loading-state" class="loading" style="display: none; margin-bottom: 12px;">
+                    <div class="spinner"></div>
+                    <span>Generating response...</span>
+                </div>
+                <div id="error-state" class="error" style="display: none; margin-bottom: 12px;"></div>
+                <textarea id="rfp-output" placeholder="Generated response will appear here..."></textarea>
+                <div class="button-group">
+                    <button class="btn-export" onclick="exportResponse()">Export as Text</button>
+                </div>
+                <div id="copy-success" class="success" style="display: none; margin-top: 8px;">Copied to clipboard!</div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        Powered by Bharat AI · connect <a href="mailto:atulmca@yahoo.com">atulmca@yahoo.com</a>
+    </footer>
+
+    <script>
+        async function generateResponse() {
+            const rfpInput = document.getElementById('rfp-input').value.trim();
+            const loadingState = document.getElementById('loading-state');
+            const errorState = document.getElementById('error-state');
+            const outputTextarea = document.getElementById('rfp-output');
+            const generateButton = document.querySelector('.btn-generate');
+            
+            if (!rfpInput) {
+                errorState.textContent = 'Please enter an RFP section.';
+                errorState.style.display = 'block';
+                return;
+            }
+            
+            errorState.style.display = 'none';
+            loadingState.style.display = 'flex';
+            generateButton.disabled = true;
+            outputTextarea.value = '';
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-haiku-4-5-20251001',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `You are an expert consultant preparing professional RFP responses for a top-tier consulting firm specializing in digital transformation, organizational change management, and enterprise modernization. 
+
+The firm has the following capabilities:
+- 25+ years of experience in consulting
+- Proven track record with Fortune 500 companies
+- Expert teams in cloud migration, change management, and enterprise architecture
+- Agile and waterfall methodology expertise
+- Dedicated project management and quality assurance teams
+- 99.2% on-time delivery rate
+
+Please provide a professional, detailed response to the following RFP requirement section. The response should:
+1. Address each specific requirement mentioned
+2. Demonstrate firm capabilities relevant to the requirement
+3. Include proposed approach and methodology
+4. Highlight differentiators and value proposition
+5. Be suitable for an official RFP response document
+
+RFP Requirement Section:
+${rfpInput}
+
+Provide a comprehensive, professional response that would be suitable for submission in an RFP document.`
+                            }
+                        ]
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const generatedText = data.content[0].text;
+                outputTextarea.value = generatedText;
+                errorState.style.display = 'none';
+            } catch (error) {
+                errorState.textContent = `Error generating response: ${error.message}`;
+                errorState.style.display = 'block';
+            } finally {
+                loadingState.style.display = 'none';
+                generateButton.disabled = false;
+            }
+        }
+        
+        function exportResponse() {
+            const outputTextarea = document.getElementById('rfp-output');
+            const text = outputTextarea.value;
+            
+            if (!text.trim()) {
+                alert('No response to export. Please generate a response first.');
+                return;
+            }
+            
+            const element = document.createElement('a');
+            const file = new Blob([text], { type: 'text/plain' });
+            element.href = URL.createObjectURL(file);
+            element.download = 'rfp_response.txt';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            
+            const copySuccess = document.getElementById('copy-success');
+            copySuccess.textContent = 'Response downloaded!';
+            copySuccess.style.display = 'block';
+            setTimeout(() => {
+                copySuccess.style.display = 'none';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
